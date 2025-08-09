@@ -62,13 +62,33 @@ def train(pi, optimizer):
 
 
 def plot_training_results(
-    episodes, episode_rewards, episode_losses, filename="reinforce_training.png"
+    episodes,
+    episode_rewards,
+    episode_losses,
+    filename="reinforce_training.png",
+    window_size=50,
 ):
     """Plot training results showing rewards and loss over episodes."""
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8))
 
+    # Calculate running average
+    def running_average(data, window):
+        return np.convolve(data, np.ones(window) / window, mode="valid")
+
+    running_avg = running_average(episode_rewards, window_size)
+    running_avg_episodes = episodes[
+        window_size - 1 :
+    ]  # Adjust episode indices for running average
+
     # Plot rewards
-    ax1.plot(episodes, episode_rewards, "b-", alpha=0.7, label="Episode Reward")
+    ax1.plot(episodes, episode_rewards, "b-", alpha=0.3, label="Episode Reward")
+    ax1.plot(
+        running_avg_episodes,
+        running_avg,
+        "b-",
+        linewidth=2,
+        label=f"Running Average ({window_size} episodes)",
+    )
     ax1.axhline(y=195, color="r", linestyle="--", label="Solved Threshold")
     ax1.set_xlabel("Episode")
     ax1.set_ylabel("Total Reward")
@@ -108,7 +128,7 @@ def main():
     episode_rewards = []
     episodes = []
 
-    for epi in range(5000):
+    for epi in range(1000):
         state, _ = env.reset()
         for t in range(100000):
             action = pi.act(state)
