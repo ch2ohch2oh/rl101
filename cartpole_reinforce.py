@@ -3,7 +3,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.distributions import Categorical
-import gym
+import gymnasium as gym
+import matplotlib.pyplot as plt
 
 gamma = 0.99
 
@@ -29,7 +30,7 @@ class Pi(nn.Module):
         return self.model(x)
 
     def act(self, state):
-        x = torch.from_numpy(state).float()
+        x = torch.from_numpy(state)
         logits = self.forward(x)
         dist = Categorical(logits=logits)
         action = dist.sample()
@@ -58,32 +59,80 @@ def train(pi, optimizer):
     return loss.item()
 
 
+def plot_training_results(
+    episodes, episode_rewards, episode_losses, filename="reinforce_training.png"
+):
+    """Plot training results showing rewards and loss over episodes."""
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8))
+
+    # Plot rewards
+    ax1.plot(episodes, episode_rewards, "b-", alpha=0.7, label="Episode Reward")
+    ax1.axhline(y=195, color="r", linestyle="--", label="Solved Threshold")
+    ax1.set_xlabel("Episode")
+    ax1.set_ylabel("Total Reward")
+    ax1.set_title("REINFORCE Training: Episode Rewards")
+    ax1.legend()
+    ax1.grid(True, alpha=0.3)
+
+    # Plot loss
+    ax2.plot(episodes, episode_losses, "g-", alpha=0.7, label="Loss")
+    ax2.set_xlabel("Episode")
+    ax2.set_ylabel("Loss")
+    ax2.set_title("REINFORCE Training: Loss")
+    ax2.legend()
+    ax2.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.savefig(filename, dpi=300, bbox_inches="tight")
+    plt.show()
+
+    # Print summary statistics
+    print("\nTraining completed!")
+    print(
+        f"Average reward over last 100 episodes: {np.mean(episode_rewards[-100:]):.2f}"
+    )
+    print(f"Plot saved as '{filename}'")
+
+
 def main():
     env = gym.make("CartPole-v1")
     in_dim = env.observation_space.shape[0]
     out_dim = env.action_space.n
     pi = Pi(in_dim, out_dim)
-    optimizer = optim.Adam(pi.parameters(), lr=1e-2)
+    optimizer = optim.Adam(pi.parameters(), lr=1e-3)
 
-    for epi in range(300):
-        state = env.reset()
+    # Lists to store metrics for plotting
+    episode_losses = []
+    episode_rewards = []
+    episodes = []
+
+    for epi in range(1000):
+        state, _ = env.reset()
         for t in range(200):
             action = pi.act(state)
-            state, reward, done, _ = env.step(action)
+            state, reward, done, truncated, _ = env.step(action)
             pi.rewards.append(reward)
 
-            env.render()
-
-            if done:
+            if done or truncated:
                 break
 
         loss = train(pi, optimizer)
         total_reward = sum(pi.rewards)
         solved = total_reward > 195.0
         pi.onpolicy_reset()
+
+        # Store metrics
+        episodes.append(epi)
+        episode_losses.append(loss)
+        episode_rewards.append(total_reward)
+
         print(
-            f"Episode {epi}, loss: {loss}, total_reward: {total_reward}, solved: {solved}"
+            f"Episode {epi}, loss: {loss:.2f}, total_reward: {total_reward}, solved: {solved}"
         )
+
+    # Plot training results
+    plot_training_results(episodes, episode_rewards, episode_losses)
+
 
 if __name__ == "__main__":
     main()
