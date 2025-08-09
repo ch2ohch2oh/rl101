@@ -13,9 +13,9 @@ class Pi(nn.Module):
     def __init__(self, in_dim, out_dim):
         super(Pi, self).__init__()
         layers = [
-            nn.Linear(in_dim, 64),
+            nn.Linear(in_dim, 128),
             nn.ReLU(),
-            nn.Linear(64, out_dim),
+            nn.Linear(128, out_dim),
             nn.Softmax(dim=-1),
         ]
         self.model = nn.Sequential(*layers)
@@ -49,9 +49,11 @@ def train(pi, optimizer):
         rets[i] = future_ret
 
     rets = torch.tensor(rets)
+    rets = (rets - rets.mean()) / (rets.std() + 1e-8)
+
     log_probs = torch.stack(pi.log_probs)
 
-    loss = -(log_probs * rets).sum()
+    loss = -(log_probs * rets).mean()
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()
@@ -106,9 +108,9 @@ def main():
     episode_rewards = []
     episodes = []
 
-    for epi in range(1000):
+    for epi in range(5000):
         state, _ = env.reset()
-        for t in range(200):
+        for t in range(100000):
             action = pi.act(state)
             state, reward, done, truncated, _ = env.step(action)
             pi.rewards.append(reward)
