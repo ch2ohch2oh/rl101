@@ -201,15 +201,6 @@ mlruns/
 # Tensorboard logs
 events.out.tfevents.*
 
-# Plots and visualizations
-*.png
-*.jpg
-*.jpeg
-*.gif
-*.svg
-*.pdf
-*.eps
-
 # Jupyter notebook outputs
 *.ipynb
 

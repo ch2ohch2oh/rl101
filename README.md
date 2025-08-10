@@ -1,8 +1,11 @@
 # RL Code Examples
 
-## REINFORCE applied to CartPole-V1
+## REINFORCE Applied to CartPole-V1
 
 Smaller nerwork with `hidden_size=16` seems to have much less varaince
 than larger models. 
+- The training rewards vary quite a lot - it's normal for REINFORCE.
+- The training loss is not decreasing - also normal for RL. As your agent survives longer,
+  there will be more terms in the loss function.
 
 ![CartPole-V1 REINFORCE training plot](images/cartpole_reinforce/reinforce_training_h16.png)
