@@ -8,5 +8,21 @@ dependencies = [
     "gymnasium[classic-control]>=1.2.0",
     "matplotlib>=3.10.5",
     "numpy>=2.3.2",
+    "ruff>=0.12.8",
     "torch>=2.8.0",
 ]
+
+[tool.ruff]
+# Enable import sorting
+select = ["I"]
+fix = true
+
+[tool.ruff.lint]
+# Enable isort-compatible import sorting
+select = ["I"]
+
+[tool.ruff.lint.isort]
+# Configure import sorting behavior
+known-first-party = ["plot_utils"]
+force-single-line = false
+lines-after-imports = 2
