@@ -31,9 +31,7 @@ def plot_training_results(
     success_threshold=475,
 ):
     """Plot training results showing rewards and loss over episodes."""
-    # Auto-generate filename if not provided
-    if filename is None:
-        filename = get_next_filename("reinforce_training.png")
+    filename = get_next_filename(filename)
 
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8))
 
@@ -60,7 +58,7 @@ def plot_training_results(
     )
     ax1.set_xlabel("Episode")
     ax1.set_ylabel("Total Reward")
-    ax1.set_title("REINFORCE Training: Episode Rewards")
+    ax1.set_title("{} Training: Episode Rewards".format(training_params['algorithm']))
     ax1.legend(loc="upper left")
     ax1.grid(True, alpha=0.3)
 
@@ -68,7 +66,7 @@ def plot_training_results(
     ax2.plot(episodes, episode_losses, "g-", alpha=0.7, label="Loss")
     ax2.set_xlabel("Episode")
     ax2.set_ylabel("Loss")
-    ax2.set_title("REINFORCE Training: Loss")
+    ax2.set_title("{} Training: Loss".format(training_params['algorithm']))
     ax2.legend(loc="upper left")
     ax2.grid(True, alpha=0.3)
 
