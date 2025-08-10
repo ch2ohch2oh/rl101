@@ -67,12 +67,7 @@ def reinforce(
         R = sum([a * b for a, b in zip(discounts, rewards)])
 
         # Calculate the loss
-        policy_loss = []
-        for log_prob in saved_log_probs:
-            # Note that we are using Gradient Ascent, not Descent. So we need to calculate it with negative rewards.
-            policy_loss.append(-log_prob * R)
-        # After that, we concatenate whole policy loss in 0th dimension
-        policy_loss = torch.cat(policy_loss).sum()
+        policy_loss = -sum(saved_log_probs) * R
 
         episodes.append(e)
         episode_rewards.append(sum(rewards))
@@ -83,16 +78,14 @@ def reinforce(
         policy_loss.backward()
         optimizer.step()
 
-        if e % print_every == 0:
+        if e % print_every == 0 or np.mean(rolling_scores) >= success_threshold:
             print(
-                "Episode {}\tAverage Score: {:.2f}".format(e, np.mean(rolling_scores))
-            )
-        if np.mean(rolling_scores) >= success_threshold:
-            print(
-                "Environment solved in {:d} episodes!\tAverage Score: {:.2f}".format(
-                    e - 100, np.mean(rolling_scores)
+                "Episode {}\tAverage Score: {:.2f}\tEpisode Loss: {:.2f}".format(
+                    e, np.mean(rolling_scores), episode_losses[-1]
                 )
             )
+        if np.mean(rolling_scores) >= success_threshold:
+            print("Rolling score above threhold => DONE")
             break
     return episodes, episode_rewards, episode_losses
 
@@ -102,7 +95,7 @@ if __name__ == "__main__":
     lr = 1e-3
     gamma = 1
     hidden_size = 16
-    
+
     policy = Policy(hidden_size=hidden_size)
     optimizer = optim.Adam(policy.parameters(), lr=lr)
     episodes, episode_rewards, episode_losses = reinforce(
@@ -111,9 +104,9 @@ if __name__ == "__main__":
 
     # Prepare training parameters for display
     training_params = {
-        'lr': lr,
-        'gamma': gamma,
-        'hidden_size': hidden_size,
+        "lr": lr,
+        "gamma": gamma,
+        "hidden_size": hidden_size,
     }
 
     plot_training_results(episodes, episode_rewards, episode_losses, training_params)
