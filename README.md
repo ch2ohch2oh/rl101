@@ -7,6 +7,8 @@ than larger models.
 - The training rewards vary quite a lot - it's normal for REINFORCE.
 - The training loss is not decreasing - also normal for RL. As your agent survives longer,
   there will be more terms in the loss function.
+- `gamma=1` works best and my intuition is smaller gamma does not encourage 
+  long term survival.
 
 The loss function is
 $$
